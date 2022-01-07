@@ -11,7 +11,7 @@ use crossterm::{
 
 //const HEIGHT:usize = 20;
 //const WIDTH:usize = 20;
-const TURNS:u8= 20;
+const TURNS:u8= 150;
 
 #[derive(Clone, Copy)]
 struct Environment {
@@ -27,7 +27,7 @@ impl Environment {
 
 }
 
-fn load_live_cells(live_cells: [(usize, usize); 5], environment: &mut Environment) {
+fn load_live_cells(live_cells: Vec<(usize, usize)>, environment: &mut Environment) {
     for cell in live_cells {
         environment.data[cell.0][cell.1] = true;
     }
@@ -96,6 +96,25 @@ fn get_live_neigbour_count(coords: (usize, usize), environment: &Environment) ->
     count
 }
 
+fn conways_rules(row: usize, col: usize, environment: &Environment) -> bool {
+    let neighbours = get_live_neigbour_count((row,col), &environment);
+    let mut result = false;
+    if environment.data[row][col] {
+        if neighbours < 2 {
+            result = false;
+        } else if (neighbours ==2) | (neighbours ==3){
+            result = true;
+        } else if neighbours >= 3 {
+            result = false;
+        }
+    } else {
+        if neighbours == 3 {
+            result = true;
+        }
+    }
+    result
+}
+
 fn row_to_string(row: usize, environment: &Environment) -> String {
     let mut row_string = String::from("");
     for col in 0..50 {
@@ -118,19 +137,23 @@ fn main() -> Result<()> {
 
     let mut environment = Environment::new();
     let mut new_environment = Environment::new();
-    load_live_cells([(0,0),(1,0),(0,1),(1,2),(2,1)], &mut environment);
+    //glider
+    let shape = vec![(43,43),(43,44),(43,45),(44,43),(45,44)];
+    //line (oscillates)
+    //let shape = vec![(3,3),(4,3),(5,3)];
+    //boat (stable)
+    //let shape = vec![(3,3),(3,4),(4,3),(4,5),(5,4)];
+    //L that stabilizes as diamond;
+    //let shape = vec![(3,3),(3,4),(4,4),(5,4)];
+    //square (should be stable)
+    //let shape = vec![(3,3),(4,3),(3,4),(4,4)];
+    load_live_cells(shape, &mut environment);
     
     for _ in 0..TURNS {
         for row in 0..50 {
             for col in 0..50 {
-                let neighbours = get_live_neigbour_count((row,col), &environment);
-                if neighbours > 2 {
-                    new_environment.data[row][col] = true;
-                } else if neighbours > 1 && environment.data[row][col] {
-                    new_environment.data[row][col] = true;
-                } else {
-                    new_environment.data[row][col] = false;
-                }
+                //new_environment.data[row][col] = environment.data[row][col]
+                new_environment.data[row][col] = conways_rules(row, col, &environment);
             }
 
 
@@ -143,7 +166,7 @@ fn main() -> Result<()> {
                 .execute(PrintStyledContent(stylized_row))?
                 .execute(ResetColor)?;
         }
-        sleep(Duration::from_millis(100));
+        sleep(Duration::from_millis(20));
         stdout.execute(cursor::RestorePosition)?;
         environment = new_environment;
 
