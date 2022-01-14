@@ -11,7 +11,7 @@ use crossterm::{
 
 //const HEIGHT:usize = 20;
 //const WIDTH:usize = 20;
-const TURNS:u8= 150;
+const TURNS:u8= 200;
 
 #[derive(Clone, Copy)]
 struct Environment {
@@ -139,7 +139,7 @@ fn main() -> Result<()> {
     let mut new_environment = Environment::new();
     //glider
     let shape = vec![(43,43),(43,44),(43,45),(44,43),(45,44)];
-    //line (oscillates)
+    let shape2 = vec![(38,38),(38,39),(38,40),(39,38),(40,39)];    //line (oscillates)
     //let shape = vec![(3,3),(4,3),(5,3)];
     //boat (stable)
     //let shape = vec![(3,3),(3,4),(4,3),(4,5),(5,4)];
@@ -148,6 +148,7 @@ fn main() -> Result<()> {
     //square (should be stable)
     //let shape = vec![(3,3),(4,3),(3,4),(4,4)];
     load_live_cells(shape, &mut environment);
+    load_live_cells(shape2, &mut environment);
     
     for _ in 0..TURNS {
         for row in 0..50 {
